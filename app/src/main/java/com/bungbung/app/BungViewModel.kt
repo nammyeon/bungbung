@@ -35,7 +35,6 @@ data class UiState(
     val speech: String = "",
     val report: GrowthReport? = null,
     val driveLog: List<String> = emptyList(),
-    val showDex: Boolean = false,
     val today: Long = 0L,
     val dayOffset: Long = 0L,
 ) {
@@ -114,8 +113,8 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
             }
         }
         tracker.onPosition(v.lat, v.lon)?.let { region ->
-            log("${region.name} 진입 → ${region.itemEmoji} ${region.itemName}")
-            notifier.popup("${region.name} 입성!", "${region.itemEmoji} ${region.itemName} 획득!", region.itemEmoji)
+            log("${region.name} 진입 → ${region.itemName}")
+            notifier.popup("${region.name} 입성!", "${region.itemName} 획득!", region.id)
             say(Dialogue.newRegion(region))
         }
     }
@@ -142,7 +141,7 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
     fun turnOff() {
         source?.stop()
         source = null
-        _ui.update { it.copy(phase = Phase.OFF, speech = "", showDex = false, vehicle = null, condition = Condition.NORMAL) }
+        _ui.update { it.copy(phase = Phase.OFF, speech = "", vehicle = null, condition = Condition.NORMAL) }
     }
 
     // ── 주차 중 돌보기 (주행 중에는 화면에서 막는다) ────────────
@@ -164,6 +163,10 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
     /** 실제 주유·충전 = 진짜 밥. 시연에서는 버튼으로 주유를 흉내 낸다. */
     fun refuel() {
         if (!_ui.value.canTouch) return
+        if ((_ui.value.vehicle?.fuelPercent ?: 100) >= 50) {
+            say("아직 배 안 고파! 연료가 충분해.")
+            return
+        }
         val (next, line) = CharacterEngine.onRefuel(_ui.value.bung)
         updateBung(next)
         _ui.update { s ->
@@ -171,11 +174,6 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
             s.copy(vehicle = v, condition = CharacterEngine.condition(v))
         }
         say(line)
-    }
-
-    fun openDex(open: Boolean) {
-        if (!_ui.value.canTouch) return
-        _ui.update { it.copy(showDex = open) }
     }
 
     fun equip(regionId: String?) {
@@ -188,7 +186,7 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
     fun skipDays(days: Long) {
         val offset = _ui.value.dayOffset + days
         store.saveDayOffset(offset)
-        _ui.update { it.copy(dayOffset = offset, today = today(offset)) }
+        _ui.update { it.copy(dayOffset = offset, today = today(offset), speech = "…${days}일이 지났어요…") }
     }
 
     fun resetAll() {

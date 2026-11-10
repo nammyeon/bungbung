@@ -10,11 +10,14 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.RectF
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.bungbung.app.ui.PixelArt
+import com.bungbung.app.ui.Sprite
+import com.bungbung.app.ui.bungSprite
+import com.bungbung.core.Mood
 
 /**
  * 내비 화면 위에 잠깐 뜨는 상단 알림(헤드업 알림).
@@ -32,7 +35,7 @@ class Notifier(private val context: Context) {
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
-    fun popup(title: String, text: String, emoji: String?) {
+    fun popup(title: String, text: String, regionId: String?) {
         if (Build.VERSION.SDK_INT >= 33 &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
@@ -44,7 +47,7 @@ class Notifier(private val context: Context) {
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_bung_small)
-            .setLargeIcon(faceBitmap(emoji))
+            .setLargeIcon(faceBitmap(regionId))
             .setContentTitle(title)
             .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -56,32 +59,34 @@ class Notifier(private val context: Context) {
         NotificationManagerCompat.from(context).notify(nextId++, notification)
     }
 
-    /** 알림 아이콘용 붕붕이 얼굴. */
-    private fun faceBitmap(emoji: String?): Bitmap {
+    /** 알림 아이콘용 도트 붕붕이(+ 얻은 아이템). */
+    private fun faceBitmap(regionId: String?): Bitmap {
         val size = 192
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         val p = Paint(Paint.ANTI_ALIAS_FLAG)
-        p.color = 0xFFFFF1C7.toInt()
+        p.color = 0xFFB9C7A0.toInt()
         c.drawCircle(size / 2f, size / 2f, size / 2f, p)
-        p.color = 0xFFFFC93C.toInt()
-        c.drawRoundRect(RectF(36f, 56f, 156f, 150f), 36f, 36f, p)
-        p.color = 0xFF2B2D42.toInt()
-        c.drawCircle(76f, 96f, 9f, p)
-        c.drawCircle(116f, 96f, 9f, p)
-        p.style = Paint.Style.STROKE
-        p.strokeWidth = 6f
-        p.strokeCap = Paint.Cap.ROUND
-        c.drawArc(RectF(82f, 102f, 110f, 124f), 20f, 140f, false, p)
-        p.style = Paint.Style.FILL
-        c.drawCircle(64f, 156f, 14f, p)
-        c.drawCircle(128f, 156f, 14f, p)
-        if (emoji != null) {
-            p.textSize = 54f
-            p.textAlign = Paint.Align.CENTER
-            c.drawText(emoji, size / 2f, 58f, p)
-        }
+        val dot = 6f
+        val body = bungSprite(Mood.HAPPY)
+        val x = (size - body.width * dot) / 2
+        val y = size * 0.42f
+        drawSprite(c, p, body, x, y, dot)
+        regionId?.let { PixelArt.items[it] }?.let { drawSprite(c, p, it, x + 5.5f * dot, y - 7.5f * dot, dot) }
         return bmp
+    }
+
+    private fun drawSprite(c: Canvas, p: Paint, s: Sprite, x: Float, y: Float, dot: Float) {
+        s.rows.forEachIndexed { r, row ->
+            row.forEachIndexed { col, ch ->
+                p.color = when (ch) {
+                    '#' -> 0xFF2E3A2B.toInt()
+                    'o' -> 0xFF7E8F6C.toInt()
+                    else -> return@forEachIndexed
+                }
+                c.drawRect(x + col * dot, y + r * dot, x + (col + 1) * dot - 1, y + (r + 1) * dot - 1, p)
+            }
+        }
     }
 
     companion object {
