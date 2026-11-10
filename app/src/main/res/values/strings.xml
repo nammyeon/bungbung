@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">붕붕</string>
+    <string name="channel_name">붕붕이 소식</string>
+    <string name="channel_desc">도감 획득, 레벨업 같은 특별한 순간에만 알려요</string>
+</resources>

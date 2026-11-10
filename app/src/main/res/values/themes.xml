@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.Bungbung" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#FFFFF8EC</item>
+        <item name="android:navigationBarColor">#FFFFF8EC</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">@color/bg</item>
+    </style>
+</resources>

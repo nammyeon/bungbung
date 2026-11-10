@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 차량(Android Automotive)과 일반 휴대폰 에뮬레이터 둘 다에서 실행되도록 required=false -->
+    <uses-feature android:name="android.hardware.type.automotive" android:required="false" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Bungbung">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="unspecified">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- 주행 중 화면은 터치 조작이 없도록 설계했으므로 차량의 주행 중 제한(UX Restrictions)에 맞춘다 -->
+            <meta-data android:name="distractionOptimized" android:value="true" />
+        </activity>
+    </application>
+</manifest>
