@@ -40,6 +40,7 @@ class BungStore(context: Context) {
         put("collected", JSONArray(s.collected.toList()))
         s.equippedItem?.let { put("equippedItem", it) }
         put("totalKm", s.totalKm)
+        s.bornDay?.let { put("bornDay", it) }
         s.lastTrip?.let { t ->
             put("lastTrip", JSONObject().apply {
                 put("distanceKm", t.distanceKm)
@@ -62,6 +63,7 @@ class BungStore(context: Context) {
         collected = o.optJSONArray("collected").toStringList().toSet(),
         equippedItem = if (o.has("equippedItem")) o.getString("equippedItem") else null,
         totalKm = o.optDouble("totalKm", 0.0),
+        bornDay = if (o.has("bornDay")) o.getLong("bornDay") else null,
         lastTrip = o.optJSONObject("lastTrip")?.let { t ->
             TripSummary(
                 distanceKm = t.optDouble("distanceKm", 0.0),

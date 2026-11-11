@@ -57,7 +57,9 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         val offset = store.loadDayOffset()
-        _ui.value = UiState(bung = store.load(), dayOffset = offset, today = today(offset))
+        val loaded = store.load()
+        val bung = if (loaded.bornDay == null) loaded.copy(bornDay = today(offset)).also(store::save) else loaded
+        _ui.value = UiState(bung = bung, dayOffset = offset, today = today(offset))
     }
 
     private fun today(offset: Long) = LocalDate.now().toEpochDay() + offset
@@ -192,7 +194,9 @@ class BungViewModel(app: Application) : AndroidViewModel(app) {
     fun resetAll() {
         source?.stop()
         store.clear()
-        _ui.value = UiState(today = today(0))
+        val fresh = BungState(bornDay = today(0))
+        store.save(fresh)
+        _ui.value = UiState(bung = fresh, today = today(0))
     }
 
     override fun onCleared() {

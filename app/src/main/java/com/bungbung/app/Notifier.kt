@@ -8,15 +8,21 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.bungbung.app.ui.PixelArt
-import com.bungbung.app.ui.Sprite
-import com.bungbung.app.ui.bungSprite
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
+import com.bungbung.app.ui.bungBox
+import com.bungbung.app.ui.drawBung
 import com.bungbung.core.Mood
 
 /**
@@ -59,34 +65,16 @@ class Notifier(private val context: Context) {
         NotificationManagerCompat.from(context).notify(nextId++, notification)
     }
 
-    /** 알림 아이콘용 도트 붕붕이(+ 얻은 아이템). */
+    /** 알림 아이콘용 붕붕이 얼굴(+ 얻은 아이템). 화면과 같은 그림 데이터를 비트맵에 그린다. */
     private fun faceBitmap(regionId: String?): Bitmap {
-        val size = 192
-        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
-        val p = Paint(Paint.ANTI_ALIAS_FLAG)
-        p.color = 0xFFB9C7A0.toInt()
-        c.drawCircle(size / 2f, size / 2f, size / 2f, p)
-        val dot = 6f
-        val body = bungSprite(Mood.HAPPY)
-        val x = (size - body.width * dot) / 2
-        val y = size * 0.42f
-        drawSprite(c, p, body, x, y, dot)
-        regionId?.let { PixelArt.items[it] }?.let { drawSprite(c, p, it, x + 5.5f * dot, y - 7.5f * dot, dot) }
-        return bmp
-    }
-
-    private fun drawSprite(c: Canvas, p: Paint, s: Sprite, x: Float, y: Float, dot: Float) {
-        s.rows.forEachIndexed { r, row ->
-            row.forEachIndexed { col, ch ->
-                p.color = when (ch) {
-                    '#' -> 0xFF2E3A2B.toInt()
-                    'o' -> 0xFF7E8F6C.toInt()
-                    else -> return@forEachIndexed
-                }
-                c.drawRect(x + col * dot, y + r * dot, x + (col + 1) * dot - 1, y + (r + 1) * dot - 1, p)
-            }
+        val size = 192f
+        val image = ImageBitmap(size.toInt(), size.toInt())
+        CanvasDrawScope().draw(Density(1f), LayoutDirection.Ltr, Canvas(image), Size(size, size)) {
+            drawCircle(Color(0xFFFFE3EA), radius = size / 2, center = Offset(size / 2, size / 2))
+            val box = bungBox(cx = size / 2, feetY = size * 0.9f, height = size * 0.78f)
+            drawBung(box, Mood.HAPPY, regionId, Color(0xFFFFE9A8))
         }
+        return image.asAndroidBitmap()
     }
 
     companion object {

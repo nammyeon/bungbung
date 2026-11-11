@@ -15,6 +15,7 @@ data class BungState(
     val equippedItem: String? = null,  // Region.id
     val totalKm: Double = 0.0,
     val lastTrip: TripSummary? = null,
+    val bornDay: Long? = null,         // 처음 만난 날 (D+n 표시용)
 ) {
     val level: Int get() = CharacterEngine.levelFor(exp)
 }
